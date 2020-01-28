@@ -12,6 +12,14 @@
 
 // TODO: Create a KVOContext to identify the StopWatch observer
 
+// void* * = AnyObject (pointer to any class type)
+void *KVOContext = &KVOContext; // 0x12343 == 291 // just a number!
+
+// KVO = Key Value Observing
+// Listen for changes on a property
+// Similar to Notification Center
+// Delegate Pattern
+
 
 @interface ViewController ()
 @property (weak, nonatomic) IBOutlet UILabel *timeLabel;
@@ -76,14 +84,33 @@
         _stopwatch = stopwatch;
         
         // didSet
-		// TODO: Setup KVO - Add Observers
+		// Setup KVO - Add Observers
+        // context = who is listening (unique to our class)
+        
+        [_stopwatch addObserver:self forKeyPath:@"running" options:0 context:KVOContext];
+        [_stopwatch addObserver:self forKeyPath:@"elapsedTime" options:0 context:KVOContext];
+
     }
     
 }
 
 
-// TODO: Review docs and implement observerValueForKeyPath
+// Review docs and implement observerValueForKeyPath
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    if (context == KVOContext) {
+        if ([keyPath isEqualToString:@"running"]) {
+            [self updateViews];
+            printf("running.Update UI: %i\n", self.stopwatch.running);
+        } else if ([keyPath isEqualToString:@"elapsedTime"]) {
+            [self updateViews];
+            // %0.2f = 0.00 (decimal place limit)
+            printf("running.Update UI: %0.2f\n", self.stopwatch.elapsedTime);
+        }
+    } else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
+}
 
 - (void)dealloc {
 	// TODO: Stop observing KVO (otherwise it will crash randomly)
